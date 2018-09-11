@@ -8,7 +8,7 @@ sudo apt-get install python3
 ```
 2. Instalar el gestor de paquetes de Python
 ```
-sudo apt-get install pip3
+sudo apt-get install python3-pip
 ```
 3. Instalar las librerías necesarias
 ```
