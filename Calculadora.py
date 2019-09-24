@@ -6,7 +6,7 @@ Script: Calculadora.py
 '''
 from DireccionIP import DireccionIP
 from Subred import Subred
-from colorama import init, Fore, Style
+from colorama import init, Fore, Style, Back
 from Recursos import Recursos
 from Database_Proyectos import engine, tabla_proyectos
 from sqlalchemy import select, and_
@@ -40,7 +40,7 @@ class Calculadora(object):
         '''
         self.recursos.mostrarEncabezado()
         # Convierte la cadena de texto al color de la tabla ANSI.
-        print(Style.BRIGHT + Fore.CYAN +
+        print(Back.BLACK + Style.BRIGHT + Fore.CYAN +
               "Seleccione una de las siguientes opciones:")
         print(Fore.WHITE + "1. Nuevo Proyecto")
         print("2. Abrir existente")
@@ -58,7 +58,7 @@ class Calculadora(object):
         print("Host Disponibles Actualmente: {0}".format(2 ** (32 - self.ipBase.mascara) - 2))
         cantidadSubredes = int(input('Numero de subredes: '))
         print(Style.RESET_ALL)
-
+        print(Back.BLACK)
         for x in range(1, cantidadSubredes + 1):
             subred = Subred()
             subred.solicitarDatos(x)
@@ -114,6 +114,7 @@ class Calculadora(object):
         '''
         os.system(self.limpiar())
         print(Style.RESET_ALL + "PROYECTOS EXISTENTES")
+        print(Back.BLACK)
         exis = self.listarProyectos()
 
         print(Style.RESET_ALL)
@@ -122,6 +123,7 @@ class Calculadora(object):
         if eleccion in exis:
             self.mostrarProyecto(eleccion)
         else:
+            print(Back.BLACK)
             print(Style.BRIGHT + Fore.RED +
                   "¡El proyecto -{0}- no existe!".format(eleccion.upper()))
             print(Style.RESET_ALL)
@@ -144,6 +146,7 @@ class Calculadora(object):
             if registros[x]['idSubred'] == '1':
                 contador += 1
                 existentes.append(registros[x]['nombre'])
+                print(Back.BLACK)
                 print(Style.BRIGHT + Fore.CYAN + "{}.{}"
                       .format(contador, registros[x]['nombre'].upper()))
 
@@ -166,11 +169,13 @@ class Calculadora(object):
 
         registros = [dict(row) for row in resultado]
 
+        print(Back.BLACK)
         print(Style.BRIGHT + Fore.YELLOW +
               "PROYECTO: {0}".format(nombreProyecto.upper()))
         print()
 
         for x in range(len(registros)):
+            print(Back.BLACK)
             print(Style.BRIGHT + Fore.CYAN +
                   "Subred {0}".format(registros[x]['idSubred']))
             print(Fore.WHITE + "Etiqueta:             {0}".format(registros[x]['etiqueta']))
@@ -196,6 +201,7 @@ class Calculadora(object):
         while len(self.subredes) > 0:
             self.subredes.pop()
 
+        print(Back.BLACK)
         print(Style.BRIGHT + Fore.WHITE)
         os.system(self.limpiar())
         self.nombreProyecto = input('Nombre del proyecto: ')
@@ -204,6 +210,7 @@ class Calculadora(object):
         if self.verificarProyectoExiste(self.nombreProyecto) is not None:
             self.iniciarCalculadora()
         else:
+            print(Back.BLACK)
             print(Style.BRIGHT + Fore.RED)
             print("¡El proyecto ya existe!")
             time.sleep(2)
@@ -318,6 +325,7 @@ class Calculadora(object):
                     elif len(listaIP) - x > 1:
                         ip.append(int(listaIP[x + 1]))
                     else:
+                        print(Back.BLACK)
                         print(Style.BRIGHT + Fore.RED + "¡IP inválida! Sin máscara.")
                         print(Style.RESET_ALL)
                         time.sleep(2)
@@ -338,7 +346,7 @@ class Calculadora(object):
         '''
         limpiar = "cls"
         plataforma = platform.system()
-        if plataforma == 'Linux':
+        if plataforma == 'Linux' or plataforma == 'Darwin':
             limpiar = "clear"
 
         return limpiar
@@ -367,6 +375,7 @@ class Calculadora(object):
             if accion:
                 accion()
             else:
+                print(Back.BLACK)
                 print(Style.BRIGHT + Fore.RED +
                       "¡{0} no es una opción válida!".format(opcion))
                 print(Style.RESET_ALL)
