@@ -13,6 +13,7 @@ from sqlalchemy import select, and_
 import platform
 import time
 import os
+import xlsxwriter
 init()
 
 
@@ -31,7 +32,8 @@ class Calculadora(object):
         self.opciones = {"1": self.nuevoProyecto,
                          "2": self.abrirExistente,
                          "3": self.desplegarAyuda,
-                         "4": self.salir
+                         "4": self.abrirExistente,
+                         "5": self.salir
                          }
 
     def desplegarMenu(self):
@@ -45,7 +47,8 @@ class Calculadora(object):
         print(Fore.WHITE + "1. Nuevo Proyecto")
         print("2. Abrir existente")
         print("3. Mostrar Ayuda")
-        print("4. Salir")
+        print("4. Exportar Proyecto")
+        print("5. Salir")
 
     def iniciarCalculadora(self):
         '''
@@ -99,7 +102,7 @@ class Calculadora(object):
         else:
             return None
 
-    def salir(self):
+    def salir(self,opcion):
         '''
         Cierra el programa.
         '''
@@ -107,7 +110,7 @@ class Calculadora(object):
         print("¡Gracias por utilizar la Calculadora de Subneteo!")
         exit()
 
-    def abrirExistente(self):
+    def abrirExistente(self,opcion):
         '''
         Opción del menú que llama a los métodos para
         mostrar los proyectos existentes y abre el solicitado.
@@ -121,7 +124,10 @@ class Calculadora(object):
         eleccion = input('Ingrese el nombre del proyecto: ')
         eleccion = eleccion.lower()
         if eleccion in exis:
-            self.mostrarProyecto(eleccion)
+            if opcion == 2:
+                self.mostrarProyecto(eleccion)
+            else:
+                self.exportarProyecto(eleccion)
         else:
             print(Back.BLACK)
             print(Style.BRIGHT + Fore.RED +
@@ -152,6 +158,53 @@ class Calculadora(object):
 
         connection.close()
         return existentes
+
+    def exportarProyecto(self, nombreProyecto):
+        '''
+        Exporta los detalles de un proyecto específico en un archivo de excel
+
+        Parámetros:
+        nombreProyecto => el nombre del proyecto a abrir.
+        '''
+        nombreArchivo = '{}.xlsx'.format(nombreProyecto)
+        workbook = xlsxwriter.Workbook(nombreArchivo)
+        worksheet = workbook.add_worksheet("Subredes")
+
+        os.system(self.limpiar())
+        connection = engine.connect()
+        seleccionar = select([tabla_proyectos],
+                             and_(tabla_proyectos.c.nombre == nombreProyecto))
+        resultado = connection.execute(seleccionar)
+        registros = [dict(row) for row in resultado]
+
+        worksheet.write(0, 0, "LISTADO DE SUBREDES")
+
+        worksheet.write(1, 0, "Id Subred")
+        worksheet.write(1, 1, "Etiqueta")
+        worksheet.write(1, 2, "Id Subred")
+        worksheet.write(1, 3, "Host Solicitador")
+        worksheet.write(1, 4, "Host Disponibles")
+        worksheet.write(1, 5, "Bits De Red")
+        worksheet.write(1, 6, "Mascara De Subred")
+        worksheet.write(1, 7, "Primera IP Asignable")
+        worksheet.write(1, 8, "Última IP Asignable")
+        worksheet.write(1, 9, "Broadcast")
+
+        for x in range(len(registros)):
+            worksheet.write(x+2, 0,registros[0]['idSubred'])
+            worksheet.write(x+2, 1, registros[x]['etiqueta'])
+            worksheet.write(x+2, 2, registros[x]['ipSubred'])
+            worksheet.write(x+2, 3, registros[x]['hostSolicitados'])
+            worksheet.write(x+2, 4, registros[x]['hostDisponibles'])
+            worksheet.write(x+2, 5, registros[x]['bitsRed'])
+            worksheet.write(x+2, 6, registros[x]['mascara'])
+            worksheet.write(x+2, 7, registros[x]['primeraAsignable'])
+            worksheet.write(x+2, 8, registros[x]['ultimaAsignable'])
+            worksheet.write(x+2, 9, registros[x]['broadcast'])
+        workbook.close()
+        connection.close()
+        print(Style.RESET_ALL + "SE GENERÓ EL ARCHIVO " + nombreArchivo)
+        input("PRESIONE ENTER PARA REGRESAR...")
 
     def mostrarProyecto(self, nombreProyecto):
         '''
@@ -194,7 +247,7 @@ class Calculadora(object):
         print(Style.RESET_ALL)
         input("PRESIONE ENTER PARA REGRESAR...")
 
-    def nuevoProyecto(self):
+    def nuevoProyecto(self,opcion):
         '''
         Crea un nuevo proyecto.
         '''
@@ -215,7 +268,7 @@ class Calculadora(object):
             print("¡El proyecto ya existe!")
             time.sleep(2)
 
-    def desplegarAyuda(self):
+    def desplegarAyuda(self,opcion):
         '''
         Muestra el manual de uso del programa.
         '''
@@ -373,7 +426,7 @@ class Calculadora(object):
             opcion = str(input("R=> "))
             accion = self.opciones.get(opcion)
             if accion:
-                accion()
+                accion(opcion)
             else:
                 print(Back.BLACK)
                 print(Style.BRIGHT + Fore.RED +
