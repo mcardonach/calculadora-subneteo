@@ -176,6 +176,8 @@ class Calculadora(object):
                              and_(tabla_proyectos.c.nombre == nombreProyecto))
         resultado = connection.execute(seleccionar)
         registros = [dict(row) for row in resultado]
+        l = len(registros)
+        self.recursos.printProgressBar(0, l, prefix='Progreso:', suffix='Completo', length=50)
 
         worksheet.write(0, 0, "LISTADO DE SUBREDES")
 
@@ -190,7 +192,7 @@ class Calculadora(object):
         worksheet.write(1, 8, "Última IP Asignable")
         worksheet.write(1, 9, "Broadcast")
 
-        for x in range(len(registros)):
+        for x in range(l) :
             worksheet.write(x+2, 0,registros[0]['idSubred'])
             worksheet.write(x+2, 1, registros[x]['etiqueta'])
             worksheet.write(x+2, 2, registros[x]['ipSubred'])
@@ -201,6 +203,7 @@ class Calculadora(object):
             worksheet.write(x+2, 7, registros[x]['primeraAsignable'])
             worksheet.write(x+2, 8, registros[x]['ultimaAsignable'])
             worksheet.write(x+2, 9, registros[x]['broadcast'])
+            self.recursos.printProgressBar(x + 1, l, prefix='Progreso:', suffix='Completado', length=50)
         workbook.close()
         connection.close()
         print(Style.RESET_ALL + "SE GENERÓ EL ARCHIVO " + nombreArchivo)
