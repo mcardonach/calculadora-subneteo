@@ -9,7 +9,7 @@ from Subred import Subred
 from colorama import init, Fore, Style, Back
 from Recursos import Recursos
 from Database_Proyectos import engine, tabla_proyectos
-from sqlalchemy import select, and_
+from sqlalchemy import select, delete, and_
 import platform
 import time
 import os
@@ -31,9 +31,10 @@ class Calculadora(object):
         self.subredes = list()
         self.opciones = {"1": self.nuevoProyecto,
                          "2": self.abrirExistente,
-                         "3": self.desplegarAyuda,
+                         "3": self.abrirExistente,
                          "4": self.abrirExistente,
-                         "5": self.salir
+                         "5": self.desplegarAyuda,
+                         "6": self.salir
                          }
 
     def desplegarMenu(self):
@@ -46,9 +47,10 @@ class Calculadora(object):
               "Seleccione una de las siguientes opciones:")
         print(Fore.WHITE + "1. Nuevo Proyecto")
         print("2. Abrir existente")
-        print("3. Mostrar Ayuda")
-        print("4. Exportar Proyecto")
-        print("5. Salir")
+        print("3. Exportar Proyecto")
+        print("4. Eliminar Proyecto")
+        print("5. Mostrar Ayuda")
+        print("6. Salir")
 
     def iniciarCalculadora(self):
         '''
@@ -124,9 +126,11 @@ class Calculadora(object):
         eleccion = input('Ingrese el nombre del proyecto: ')
         eleccion = eleccion.lower()
         if eleccion in exis:
-            if opcion == 2:
+            if int(opcion) == 2:
                 self.mostrarProyecto(eleccion)
-            else:
+            elif int(opcion) == 4:
+                self.eliminarProyecto(eleccion)
+            elif int(opcion) == 3:
                 self.exportarProyecto(eleccion)
         else:
             print(Back.BLACK)
@@ -158,6 +162,22 @@ class Calculadora(object):
 
         connection.close()
         return existentes
+
+    def eliminarProyecto(self, nombreProyecto):
+        '''
+        Elimina el proyecto de subred
+
+        Parámetros:
+        nombreProyecto => el nombre del proyecto a abrir.
+        '''
+        os.system(self.limpiar())
+        connection = engine.connect()
+        seleccionar = delete(tabla_proyectos,
+                             tabla_proyectos.c.nombre == nombreProyecto)
+        resultado = connection.execute(seleccionar)
+        connection.close()
+        print(Style.RESET_ALL)
+        input("SE ELIMINÓ EL PROYECTO, PRESIONE ENTER PARA REGRESAR...")
 
     def exportarProyecto(self, nombreProyecto):
         '''
